@@ -1,0 +1,59 @@
+export function notificationReducer(state, action) {
+  switch (action.type) {
+    case "ADD_NOTIFICATION":
+      return {
+        notifications: [action.payload, ...state.notifications].slice(0, 50),
+        unreadCount: state.unreadCount + 1,
+      };
+
+    case "MARK_READ": {
+      const target = state.notifications.find(
+        (notification) => notification.id === action.payload
+      );
+      if (!target || target.isRead) return state;
+
+      return {
+        notifications: state.notifications.map((notification) =>
+          notification.id === action.payload
+            ? { ...notification, isRead: true }
+            : notification
+        ),
+        unreadCount: Math.max(0, state.unreadCount - 1),
+      };
+    }
+
+    case "MARK_UNREAD": {
+      const target = state.notifications.find(
+        (notification) => notification.id === action.payload
+      );
+      if (!target || !target.isRead) return state;
+
+      return {
+        notifications: state.notifications.map((notification) =>
+          notification.id === action.payload
+            ? { ...notification, isRead: false }
+            : notification
+        ),
+        unreadCount: state.unreadCount + 1,
+      };
+    }
+
+    case "MARK_ALL_READ":
+      return {
+        notifications: state.notifications.map((notification) => ({
+          ...notification,
+          isRead: true,
+        })),
+        unreadCount: 0,
+      };
+
+    case "LOAD_NOTIFICATIONS":
+      return {
+        notifications: action.payload,
+        unreadCount: action.payload.filter((notification) => !notification.isRead).length,
+      };
+
+    default:
+      return state;
+  }
+}
